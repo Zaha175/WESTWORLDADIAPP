@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MPU Întrebări și Răspunsuri – Westworld Style</title>
+  <!-- Bootstrap (optional) -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"/>
+  <!-- Orbitron-Schrift -->
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet"/>
+
+  <style>
+    /* Grundlegende Westworld-Stile */
+    body {
+      font-family: 'Orbitron', sans-serif;
+      margin: 0;
+      background-color: #000;
+      background-image: url('https://cdn.gamma.app/fhpleqvbjim2f32/dd65d9289a314ac5b02ed7272f8feaf2/original/image.png');
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      color: #00ffff;
+    }
+    h1 {
+      color: #ffd700;
+      text-shadow: 0 0 10px #00ffff;
+      text-align: center;
+      margin: 20px 0;
+    }
+    p {
+      color: #00ffff;
+      text-shadow: 0 0 5px #00ffff;
+    }
+
+    /* Container für Fragen und Antworten */
+    .main-container {
+      display: flex;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 20px;
+      gap: 20px; /* Abstand zwischen Fragen und Antworten */
+    }
+
+    /* Linke Spalte: Fragen */
+    .questions {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    /* Fragenliste */
+    .questions-list {
+      flex: 1;
+      background-color: #111;
+      border: 2px solid #00ffff;
+      border-radius: 5px;
+      box-shadow: 0 0 10px #00ffff;
+      overflow-y: auto;
+      padding: 10px;
+      max-height: 80vh; /* z.B. definierte Höhe */
+    }
+    .questions-list button {
+      margin-bottom: 8px;
+    }
+
+    /* Buttons im Westworld-Stil */
+    .btn-custom {
+      font-weight: bold;
+      border: 2px solid #00ffff;
+      border-radius: 5px;
+      padding: 10px 15px;
+      font-size: 16px;
+      background-color: #000;
+      color: #00ffff;
+      text-shadow: 0 0 5px #00ffff;
+      width: 100%;
+      transition: transform 0.2s, background-color 0.3s;
+    }
+    .btn-custom:hover {
+      transform: translateY(-2px);
+    }
+    .btn-custom.active {
+      background-color: #d9a600;
+      color: #000;
+      text-shadow: 0 0 5px #d9a600;
+    }
+
+    /* Rechte Spalte: Antworten */
+    .answers {
+      flex: 2; /* mehr Platz für die Antworten */
+      background-color: #000;
+      border: 2px solid #00ffff;
+      border-radius: 5px;
+      box-shadow: 0 0 10px #00ffff;
+      padding: 10px;
+      display: none; /* Startet unsichtbar */
+      max-height: 80vh; /* optional: definiere max. Höhe */
+      overflow-y: auto; /* scroll bei Überlänge */
+      position: relative; /* normaler Flow, aber relativer Container */
+    }
+    .answers h3 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #d9a600;
+      text-shadow: 0 0 5px #d9a600;
+    }
+
+    /* Zusätzliche Stile für Videos und Bilder */
+    #video-wrapper, .image-wrapper {
+      max-height: 400px;
+      overflow-y: auto;
+      margin: 10px 0;
+    }
+    .image-wrapper img {
+      max-width: 100%;
+      max-height: 400px;
+      display: block;
+      margin: 0 auto;
+    }
+
+    /* Dark Mode */
+    .dark-mode {
+      background-color: #1e1e1e;
+      color: #e0e0e0;
+    }
+    .dark-mode h1 {
+      color: #ffd700;
+    }
+    .dark-mode .questions-list { background-color: #333; }
+    .dark-mode .btn-custom {
+      background-color: #000; 
+      color: #00ffff; 
+    }
+    .dark-mode .btn-custom.active {
+      background-color: #d9a600;
+      color: #000;
+    }
+    .dark-mode .answers {
+      background-color: #444;
+      color: #00ffff;
+    }
+
+    /* Toggle-Button */
+    .mode-toggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+    }
+    .mode-toggle.sun { color: #FFD700; }
+    .mode-toggle.moon { color: #C0C0C0; }
+
+    /* Schließen-Button für Antworten */
+    .close-answers-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background-color: #d9534f;
+      color: #fff;
+      border: none;
+      border-radius: 3px;
+      padding: 5px 10px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    .close-answers-btn:hover {
+      background-color: #c9302c;
+    }
+  </style>
+</head>
+<body>
+  <!-- Dark Mode Toggle -->
+  <button class="mode-toggle" id="modeToggle">☀️</button>
+  <h1>MPU Întrebări și Răspunsuri</h1>
+
+  <div class="main-container">
+    <!-- Linke Spalte: Fragen (Dropdown + Liste) -->
+    <div class="questions">
+      <select id="filterDropdown" class="form-control mb-3" onchange="filterQuestions()">
+        <option value="all">Toate</option>
+        <option value="video">Cu Video</option>
+        <option value="image">Cu Imagine</option>
+      </select>
+      <div class="questions-list" id="questionsList"></div>
+    </div>
+
+    <!-- Rechte Spalte: Antworten -->
+    <div class="answers" id="answerBox">
+      <button class="close-answers-btn" onclick="closeAnswer()">Închide</button>
+      <div id="answerContent"></div>
+    </div>
+  </div>
+
+  <script>
+           const qa_data = [
+             {
+    "question": "Scopul MPU?",
+    "answer": "<p>SIGURANȚĂ. Scopul unic al obținerii  permisului de conducere este de a afla dacă conducăturul unui vehicul este o SIGURANȚĂ  în traficul rutier, că nu mai este un risc. Scopul perioadei de blocare: A învăța un nou comportament! Nu veniți la MPU din cauza permisului, permisul nu este important!</p>"
+  },
+  {
+    "question": "De ce veniți la MPU? De ce sunteți astăzi aici?",
+    "answer": "<p>Sunt aici la MPU pentru că am condus sub influența drogulilor(cocaină), nu am respectat legea, am fost un egoist, am fost un pericol pentru mine și pentru alții!  Astăzi aș vrea să vă arăt că m-am schimbat și că acum sunt capabil să conduc responsabil.</p>"
+  },
+  {
+    "question": "De ce credeți că autoritățile sunt îngrijorate cu privire la capacitatea dvs. de a conduce un vehicul?",
+    "answer": "<p>Pentru că am fost prins conducând sub influența drogulilor! Acest lucru este o infracțiune gravă care poate pune în pericol viața mea și a altora!</p>"
+  },
+  {
+    "question": "Cât de des ați fost sub influența drogulilor pe drum fără a atrage atenția și ce concluzionați din aceasta?",
+    "answer": "<p>Din păcate am condus deseori sub influența drogulilor ignorând riscurile.  Asta a fost iresponsabil din partea mea. Îmi pare rău!</p>"
+  },
+  {
+    "question": "Gânduri, sentimente a doua zi după delict?",
+    "answer": "<p>A doua zi după delict, situație jenantă, mi-a fost rușine! Am fost nepăsător și egoist. Ceea ce am făcut a fost greșit, am încălcat legea, aș fi putut răni pe cineva în trafic. Eu însumi nu aș vrea să fiu rănit în acest fel, această greșeală a fost gravă și periculoasă. Știu că această societate s-ar scufunda în haos dacă toată lumea ar face întotdeauna ceea ce dorește. Nu vreau să trăiesc eu însumi într-un astfel de haos. Slavă Domnului că nu sa întâmplat nimic, de atunci nu mai consum!</p>"
+  },
+  {
+    "question": "Ați crezut că mai puteți conduce în siguranță?",
+    "answer": "<p>Da, m-am simțit în stare să conduc.  Din perspectiva de astăzi, desigur, nu a fost cazul!</p>"
+  },
+  {
+    "question": "Descrieți ziua delictului din punctul dvs. de vedere cu data și ora?",
+    "answer": "<p>25.04.2023  Marți, am fost controlat de Poliție, am avut 314 ng/ml Benzoy și 15,9 ng/ml Ezgonin. Duminică, 23.04.2023, zi de naștere, am consumat două grame de la 12:00 până la 20:30 seara. Am fost trei prieteni.</p>"
+  },
+  {
+    "question": "Cum ați rezolvat conflictul dintre consumul de droguri și conducere?",
+    "answer": "<p>În trecut, am condus sub influența substanțelor și am luat decizii greșite. Nu am putut separa consumul de responsabilitatea de a fi șofer. Singura soluție corectă e să renunț complet la substanțe pentru a nu mai conduce sub influența lor.</p>"
+  },
+  {
+    "question": "Ce efecte are cocaina asupra capacității de conducere?",
+    "answer": "<p>Timpul de reacție este mai lung, ceea ce poate îngreuna răspunsul rapid la situațiile neprevăzute în trafic.</p>\n<p>Percepțiile vizuale și judecata distanțelor sunt modificate - de exemplu distanțele par mai mari sau mai mici decât în realitate.</p>\n<p>Coordonarea mișcărilor devine mai agitată, afectând manevrarea corectă a volanului și a pedalelor.</p>\n<p>Concentrarea se împarte între lucruri relevante și irelevante pentru conducere, crescând riscul de a nu observa detaliile importante rutiere.</p>"
+  },
+  {
+    "question": "Ați consumat droguri împreună cu alcool?",
+    "answer": "<p>Nu, nu am consumat droguri împreună cu alcool, știu că consumul de alcool și droguri împreună este extrem de riscant din mai multe motive. Ele se pot potența reciproc în ceea ce privește efectele psihoactive, iar capacitatea de reacție, coordonare și judecată sunt afectate mult mai puternic. Rezultatul poate fi o stare de amețeală severă sau un stop cardiac care crește riscul producerii unui accident rutier.</p>"
+  },
+  {
+    "question": "Cum consumați în prezent alcool, medicamente? Ce știți despre schimbarea dependenței (consumului) și cum vă evaluați propria vulnerabilitate la schimbarea dependenței (consumului)?",
+    "answer": "<p>Alcool consum la ocazii speciale, în medie o bere, maximal două beri de 0,33 Litri de două ori pe lună. Medicamente nu consum! Schimbarea consumului  descrie fenomenul în care o persoană trece de la un consum la altul. Comportamentul original de consum este înlocuit cu unul nou. Cauzele schimbării consumului pot fi diferite:</p>\n<p>Schimbările în viață, cum ar fi stresul, pierderea locului de muncă sau ruperea relației, pot determina persoana să caute noi modalități de a face față provocărilor. De exemplu: în locul fumatului, beau alcool!</p>"
+  },
+  {
+    "question": "Cum v-ați descurcat cu consumul după delict? Cine sau ce va motivat să vă schimbați comportamentul? Care a fost punctul de cotitură?",
+    "answer": "<p>După delict, m-am oprit cu consumul,  abia după episodul în care am condus sub influența cocainei și am fost prins de poliție, am înțeles că depășisem o limită, a fost un punct de cotitură(delictul) care m-a făcut să iau atitudine și să renunț definitiv la consum.</p>\n<p>Punctul de cotitură: M-am decis să-mi schimb comportamentul </p>\n<p>pentru viitorul meu, </p>\n<p>pentru familia mea, </p>\n<p>dar și pentru societate, </p>\n<p>am realizat că o schimbare este necesară. Schimbarea vreau să o mențin permanent!</p>"
+  },
+  {
+    "question": "Va fost ușor să renunțați la consum?",
+    "answer": "<p>Nu, nu a fost ușor, a fost neobișnuit, gândurile au fost la început prezente, la zile de nașteri, petreceri.</p>"
+  },
+  {
+    "question": "De ce nu ați renunțat mai devreme la consum?",
+    "answer": "<p>În trecut, nu mi-am pus niciodată problema să renunț, deoarece nu am avut grijă de sănătatea mea. Credeam că consumul îmi ușurează relațiile sociale. Consumul era considerat cel mai normal lucru din lume la petreceri și nu m-am gândit la consecințele negative asupra corpului meu.</p>"
+  },
+  {
+    "question": "De ce ați renunțat la consum?",
+    "answer": "<p>M-am gândit la consum și am văzut dezavantajele: </p>\n<p>Mi-am neglijat hobby-urile!</p>\n<p>Frica de a fi prins de familie sau poliție! </p>\n<p>Obosit după consum, mi-am dat seama că consumul meu a devenit mai mare, am înțeles creșterea toleranței, în plus nu vreau ca nimeni să fie rănit în trafic în viitor!  </p>\n<p>Avantaje fără consum:</p>\n<p>Un nou cerc de prieteni.</p>\n<p>Nu-mi mai fac griji că voi fi prins.</p>\n<p>Sunt mai activ, mai fit!</p>"
+  },
+  {
+    "question": "De ce ați consumat? Cauze?",
+    "answer": "<p>Cauza o văd la mine și se află în psihicul meu, în gândurile și sentimentele mele.</p>\n<p>În România am fost cineva, am avut multă recunoaștere și apartenență, m-am simțit la fel ca și ceilalți. Știam ce valoare am. Apoi, din 2012 sunt în Germania, la vârsta de 25 de ani, mi-a fost foarte greu la început, am fost singur, nu aveam prieteni și pentru că nu am înțeles limba, am fost nemulțumit. M-am simțit ca pe ultimul loc! În Germania mi-am pierdut valoarea(încrederea în mine). </p>\n<p>Am consumat să sărbătoresc cu prietenii mei noi din românia pentru că a fost mai amuzant când sunt cu alții, să mă înveselesc, relaxez, când sunt prost dispus, am fost fericit. Când am avut primii mei prieteni noi în Germania, am fost mereu cu ei, am consumat cu ei. </p>\n<p>Am consumat droguri - apartenență... pentru că mi-a plăcut să aparțin unei anumite clici... să fiu plăcut de alții... să nu mă simt exclus. Am găsit recunoașterea și apartenență în prieteni, nu au existat diferențe. În cele din urmă am găsit prietenii care m-au acceptat cum sunt. </p>\n<p>Astăzi știu că dorința mea de recunoaștere și apartenență mi-a făcut viața dificilă, am încercat să le fac pe plac tuturor! Pentru că am vrut să demonstrez tuturor că pot face ceva, că sunt cineva. Nu am vrut să arăt nici un punct slab, să mă arăt vulnerabil. </p>\n<p>Nu am putut spune niciodată Nu! </p>\n<p>Rezumat: Mai scurt: </p>\n<p>În România mă simțeam valoros și apreciat, dar în Germania m-am simțit pierdut și lipsit de încredere fiind singur și neînțelegând limba. Pentru a mă simții bine și acceptat, am căutat să mă integrez în grupuri de prieteni și am recurs la consum de cannabis. Astăzi îmi dau seama că nevoia mea de a fi recunoscut și de a aparține a complicat lucrurile, căutând mereu aprobarea altora și evitând să arăt orice slăbiciune. Am avut dificultăți să spun „nu” și să-mi impun limitele.</p>"
+  },
+  {
+    "question": "Care a fost funcția consumului?",
+    "answer": "<p>Funcția consumului a fost dorința mea de recunoaștere și apartenență la o anumită grupă socială. Consumul mă ajuta să fiu plăcut de ceilalți și să mă relaxez atunci când eram într-o stare de spirit proastă.</p>\n<p>Consumul îmi oferea recunoaștere și apartenență.</p>\n<p>Mă ajuta să fiu plăcut de ceilalți.</p>\n<p>Mă relaxa și mă înveselea în momentele de tristețe.</p>"
+  },
+  {
+    "question": "Când ați consumat pentru prima dată?",
+    "answer": "<p>La vârsta de 27 de ani am comsumat prima dată. Nu mi-a plăcut atunci deloc!</p>"
+  },
+  {
+    "question": "Cât și cât de des ați consumat? Trecut!",
+    "answer": "<p>Diferit, la sfârșit de săptămână, Între o jumătate de joint și un joint. Cantitățile maxime au fost de 2 Jointuri, o dată pe lună.</p>"
+  },
+  {
+    "question": "Ce contact aveți momentan cu gașca/prietenii cu care ieșeați mai devreme?",
+    "answer": "<p>Între timp nu mai am nici un contact cu clica mea. Am întrerupt contactul, pentru că unii nu ar fi acceptat că nu aș mai consuma cu ei la fel de mult ca înainte. În cercul meu actual de prieteni, consumul  de DROGURI  nu ar fi acceptat.</p>"
+  },
+  {
+    "question": "Unde și cu cine ați consumat mai ales?",
+    "answer": "<p>Am consumat mai ales când eram în companie, adică mai clar la zilele de sărbători legale, zile de naștere, petreceri. Din moment ce am fost mereu afară cu prietenii mei, de obicei am consumat cu ei. Am consumat doar în companie cu prietenii și colegii, niciodată singur.</p>"
+  },
+  {
+    "question": "Aspectele pozitive ale consumului?",
+    "answer": "<p>În primul rând, a fost plăcut. Un alt motiv pentru consum a fost buna dispoziție, un factor distractiv. Am devenit mai vorbăreț, mai glumeț, mai relaxat.</p>"
+  },
+  {
+    "question": "Aspectele negative ale consumului?",
+    "answer": "<p>A doua zi dureri de cap, oboseală și lipsă de putere. Eram obosit, nemotivat, o persoană complet diferită.</p>"
+  },
+  {
+    "question": "Ați fost vreodată abordat în legătură cu consumul dvs. de droguri?",
+    "answer": "<ul>\n<li>Da, de mai multe părți (mama și prietena).</li>\n<li>Că aș consuma droguri.</li>\n<li>Dar eu am considerat consumul meu normal.</li>\n<li>Am ignorat totul.</li>\n<li>Au existat și dispute din cauza consumului.</li>\n<li>De când am încetat să consum, totul s-a dezvoltat mai pozitiv.</li>\n<li>Mă înțeleg mai bine cu partenera mea.</li>\n<li>În plus, sunt mult mai productiv la locul de muncă.</li>\n</ul>"
+  },
+  {
+    "question": "Au existat probleme cu prietena sau la locul de muncă din cauza consumului?",
+    "answer": "<ul>\n<li>Sigur, ne certam adesea din cauza consumului, la locul de muncă lunea fără putere, obosit, da, aveam probleme cu concentrarea la locul de muncă!</li>\n</ul>"
+  },
+  {
+    "question": "V-ați simțit uneori vinovat din cauza consumului de droguri?",
+    "answer": "<ul>\n<li>Da, sigur! Mai ales a doua zi.</li>\n<li>Dar două zile mai târziu uitasem deja din nou, știam că trebuie să fac ceva.</li>\n<li>Totuși, a rămas gândul, nu am făcut nimic.</li>\n</ul>"
+  },
+  {
+    "question": "Cum evaluați consumul, ați pierdut vreodată controlul asupra cantităților consumate?",
+    "answer": "<p>În trecut am avut probleme și am pierdut de câteva ori controlul cantităților consumate, ajungând să consum peste măsură. S-a întâmplat de aproximativ 6 ori pe an. Trebuie să recunosc că nu știam să mă opresc la timp.</p>"
+  },
+  {
+    "question": "Dacă au apărut rupturi de film din cauza consumului, adică dacă după un consum excesiv ați uitat părți din seara în care ați consumat excesiv?",
+    "answer": "<p>Da, în perioada în care consumam foarte mult, de câteva ori am avut rupturi de film după o seara în care consumasem în exces. Erau deja câteva porțiuni din seara petrecută pe care nu mi le mai aduceam aminte. Acesta era un semn clar că depășisem limita sigură și că consumul îmi afecta memoria.</p>"
+  },
+  {
+    "question": "V-ați abținut în mod conștient și deliberat de a consuma droguri în trecut sau mai des pe o perioadă mai lungă de timp? Ați avut pauze de consum?",
+    "answer": "<p>Sincer, nu am avut pauze de consum și nu au existat niciodată încercări de abstinență. Nu, nu m-am abținut conștient și deliberat de a consuma pe o perioadă mai îndelungată de timp. Deși uneori, îmi dădeam seama că nu controlasem bine situația și că ar fi trebuit să reduc cantitatea consumată, nu luam măsuri concrete să mă las. Greșeala mea a fost că uitam prea curând de problemele provocate de canabis și nu înțelegeam faptul că abuzam deja de el.</p>"
+  },
+  {
+    "question": "În ce categorie vă vedeți astăzi retrospectiv? Cum ați evalua comportamentul dvs. de consum până la data infracțiunii?",
+    "answer": "<p>Astăzi mă văd în abuz, cantitățile au fost ridicate și problematice. Scala la 8. (sub mediu - mediu - abuziv - dependent) Scala 1 2 3 4 5 6 7 8 9 10\n!</p>"
+  },
+  {
+    "question": "Consumați droguri astăzi? Dacă da, ce, cât și cât de des? Vă puteți imagina să consumați droguri în viitor?",
+    "answer": "<p>Sunt abstinent de mai mult de un an! Nu! Nu! Știu că am probleme cu drogurile\n!</p>"
+  },
+  {
+    "question": "Ce contact aveți momentan cu gașca, cu care ați consumat?",
+    "answer": "<p>Între timp nu mai am nici un contact cu clica mea. Acum evit astfel de evenimente. În cercul meu actual de prieteni, consumul intensiv de droguri nu ar fi acceptat.</p>"
+  },
+  {
+    "question": "Ce vorbește împotriva faptului că nu ați fost dependent?",
+    "answer": "<ul>\n<li>Nu am avut probleme de sevraj, deci probleme fizice!</li>\n<li>M-am oprit fără ajutor.</li>\n<li>Mi-am respectat Terminele.</li>\n<li>Nu am fost în spital, nu am făcut Terapie.</li>\n</ul>"
+  },
+  {
+    "question": "Ce știți despre cocaină (efect, rata de degradare, limite, consecințe legale)?",
+    "answer": "<p>Efectul este stimulant, energizant, crescător al încrederii în sine. Oferă o stare de euforie intensă și de scurtă durată, datorită creșterii nivelului de dopamină în creier.</p>\n<p>\tCe este sub influența cocainei altfel?</p>\n<p>Efectele cocainei asupra organismului: Crește ritmul cardiac și tensiunea arterială, reduce oboseala, crește vigilența, induce o stare de euforie și hiperactivitate. Poate duce la agresivitate, anxietate crescută și paranoia. La doze mari, poate provoca infarct miocardic, accident vascular cerebral sau insuficiență respiratorie.</p>\n<p>Reduce senzația de foame și oboseală. Degradare: Cocaina are un timp de înjumătățire de aproximativ 1 oră, dar metaboliții săi pot fi detectați în sânge și urină timp de mai multe zile. Consecințe legale: Conducerea sub influența cocainei poate duce la amenzi severe, suspendarea permisului de conducere și chiar pedepse cu închisoarea. Sub influența cocainei nu sunt asigurat dacă fac un accident. Oricine conduce un autoturism cu urme detectabile de cocaină în sânge poate comite o infracțiune.</p>"
+  },
+  {
+    "question": "Cu cât este mai mare riscul unui accident cu o concentrație de droguri în sânge comparativ cu șoferul sobru?",
+    "answer": "<p>Conducerea sub influența drogurlilor poate afecta negativ timpul de reacție, coordonarea motorică, atenția și capacitatea de a evalua corect distanțele, ceea ce poate crește riscul de accidente rutiere, riscul exact variază în funcție de cantitatea de THC consumată.</p>"
+  },
+  {
+    "question": "Ce sa schimbat de când nu mai consumați? Schimbări?",
+    "answer": "<p>De când nu mai consum, au avut loc mai multe schimbări în viața mea. Am decis să duc o viață mai bună și să trăiesc mai sănătos. Am observat că totul a devenit mai pozitiv. Am mai mult timp liber acum și mi-am găsit un nou hobby, învățarea limbii germane. Am achiziționat și o bicicletă nouă. În locul consumului în weekend, am înlocuit acest obicei cu hobby-uri și petrecerea timpului cu familia. Aceste schimbări m-au ajutat să mă simt mai bine și să mă concentrez pe lucruri pozitive în viața mea.</p>"
+  },
+  {
+    "question": "Ați fost un șofer sigur?",
+    "answer": "<p>Nu, altfel nu aș fi ajuns la MPU, deoarece șoferii foarte buni nu trebuie să meargă la MPU!</p>"
+  },
+  {
+    "question": "Cum evaluați faptul că până la delict nu ați mai avut niciodată un accident major?",
+    "answer": "<p>A fost doar noroc!</p>"
+  },
+  {
+    "question": "De ce există atât de multe reguli și legi?",
+    "answer": "<p>Regulile și legile sunt necesare pentru a ne proteja societatea și pentru a permite o conviețuire pașnică.</p>\n<p>Am înțeles că regulile nu sunt acolo pentru a ne îngrădi, ci pentru a ne oferi siguranță și orientare.</p>\n<p>Fără reguli și legi ar exista haos și fiecare ar acționa doar după propriile sale idei.</p>\n<p>Respectând regulile, nu mă protejez doar pe mine, ci și pe ceilalți.</p>\n<p>Un comportament respectuos față de reguli și legi creează încredere și stabilitate în societatea noastră.</p>\n<p>Explicație: Este important să înțelegeți de ce există reguli și legi. Ele nu sunt menite să ne îngrădească, ci să ne protejeze pe toți – întreaga societate – și să permită o conviețuire armonioasă.</p>"
+  },
+  {
+    "question": "Cum vă vedeți ca șofer în trecut?",
+    "answer": "<p>Am fost un șofer egoist și neglijent, mă gândeam doar la mine și nu la consecințe! Îmi pare rău!</p>"
+  },
+  {
+    "question": "Ce credeți că este un șofer bun și normal?",
+    "answer": "<p>Un șofer bun este cineva care respectă regulile, este atent, se gândește la ceilalți și nu reprezintă un pericol în trafic!</p>"
+  },
+  {
+    "question": "Câte persoane trebuie să meargă anual la MPU?",
+    "answer": "<p>90.000 de persoane în anul 2019, din cauza alcoolului 40%, droguri și medicamente cu 30%, puncte 18%, restul de 12%.</p>"
+  },
+  {
+    "question": "Când ați spus ultima dată nu?",
+    "answer": "<p>Am refuzat un prieten care s-a mutat pentru a cincea oară în doi ani și avea din nou nevoie de oameni pentru a transporta cutii.</p>"
+  },
+  {
+    "question": "Care ar fi Situațiile Riscante în care noul comportament al consumului  ar putea fi expus riscului?",
+    "answer": "<p>Situații riscante, anumite crize de viață pot fi periculoase, cum ar fi moartea unei persoane dragi, boli grave, pierderea locului de muncă, frică, schimbări de dispoziție, pierderea unui partener sau îmbolnăvirea gravă.  În fiecare caz nu aș consuma. Mi-aș găsi sprijinul în familie. Continui să trăiesc, privesc înainte.</p>\n<p>Situație riscantă(Cineva îmi oferă droguri  la o zi de naștere!) Dacă cineva îmi oferă droguri în viitor, fie la o zi de naștere sau la o petrecere, îi voi spune că nu mai consum și că văd orice consum ca o pură pierdere de timp! Evit evenimentele în care experiența a arătat că oamenii consumă.</p>\n<p>Situație riscantă (Mă întâlnesc întâmplător cu vechii mei prieteni și unul dintre ei îmi oferă droguri!) spun, nu mulțumesc, nu mai consum, prefer să beau cola! La următoarea ofertă! Nu, mulțumesc, prefer să beau Cola! Dacă nu se oprește, ameninț că plec și mă ridic în mod demonstrativ.</p>"
+  },
+  {
+    "question": "Care este riscul de recidivă? Cum vă asigurați că noul comportament rămâne stabil pe termen lung?",
+    "answer": "<p>Desigur, nimeni nu poate da 100%. În viitor, vreau să respect legea  pentru că nu mai vreau să pun pe nimeni  în pericol.</p>"
+  },
+  {
+    "question": "De ce e riscul de recidivă (de a consuma din nou) minimal?",
+    "answer": "<p>Cunosc Situațiile Riscante, am prieteni noi. Știu ce este memoria dependenței. Știu ce înseamnă creșterea toleranței. Știu despre dorința mea de recunoaștere și apartenență! Am învățat să spun Nu. Nu le mai  fac pe plac altora/tuturor! Nu mă mai arăt permanent puternic, pot să arăt că sunt și slab, nu trebuie să mă mai dovedesc nimănui!</p>"
+  },
+  {
+    "question": "Când ați spus ultima dată Nu?",
+    "answer": "<p>Am refuzat unui prieten care sa mutat pentru a cincea oară în doi ani și care a avut nevoie din nou de oameni pentru a transporta cutii.</p>"
+  },
+  {
+    "question": "De ce este important să spui \"Nu\" și să nu încerci mereu să-i mulțumești pe ceilalți?",
+    "answer": "<p>Este important să pot spune \"Nu\" pentru a-mi impune propriile limite și a nu mă lăsa condus de dorința de a-i face pe alții fericiți. Cred că încercând mereu să le fac pe plac tuturor, am neglijat propriile nevoi și limite, ceea ce m-a adus în situații riscante pe care le regret astăzi. Acum înțeleg că este sănătos să mă gândesc și la mine, să spun \"Nu\" atunci când simt că persoana sau situația nu îmi fac bine, și să nu depind de aprecierea celorlalți pentru a mă simți bine.</p>"
+  },
+  {
+    "question": "Ce ați învățat în timpul pregătirii MPU?",
+    "answer": "<p>Am vorbit despre delict, l-am analizat și am găsit greșelile mele. Acum am înțeles greșelile. </p>\n<p>Greșeli: Am fost un Egoist! Nu am respectat legea: Am condus sub influența drogurilor,  am pus traficul rutier în pericol! Am fost un pericol pentru mine și pentru alții!</p>\n<p>Cunosc cauzele consumului meu (Dorința mea de recunoaștere și apartenență!).  </p>\n<p>Consumul frecvent și pe termen lung poate duce la dependență, poate afecta memoria, atenția, concentrarea și capacitatea de învățare. Există un risc crescut de dezvoltare a tulburărilor psihotice, cum ar fi schizofrenia, în special la persoanele cu predispoziție genetică.</p>\n<p>Știu ce este memoria dependenței (creierul își va aminti întotdeauna nivelurile maxime).</p>\n<p>Știu ce înseamnă creșterea toleranței (consumul devine din ce în ce mai mult).</p>\n<p>Că riscul de a comite un delict identic /recidivă nu poate fi exclus. Am discutat despre avantajele și dezavantajele consumului. Sunt pregătit pentru viitor.</p>"
+  },
+  {
+    "question": "Credeți că ar trebui să vă primiți permisul de conducere înapoi?",
+    "answer": "<p>Nu neaparat, ar fi frumos, important pentru mine este însă faptul că mi-am schimbat felul de a gândi și atitudinea față de viață, de traficul rutier, de legi, vreau să respect legile.</p>"
+  },
+  {
+    "question": "Mai aveți ceva de adăugat pentru a încheia?",
+    "answer": "<p>•\tA fost o învățătură de minte pentru mine.</p>\n<p>•\tDacă nu mi s-ar fi întâmplat asta, atunci nu aș fi schimbat nimic în viață.</p>\n<p>•\tSunt recunoscător pentru asta!</p>"
+  }
+
+        ];
+
+      // Buttons/Fragen erstellen
+    function createButtons(data) {
+      const questionsList = document.getElementById('questionsList');
+      questionsList.innerHTML = '';
+      data.forEach((item) => {
+        const button = document.createElement('button');
+        button.classList.add('btn', 'btn-custom');
+        button.textContent = item.question;
+        button.onclick = (event) => showAnswer(item, event);
+        questionsList.appendChild(button);
+      });
+    }
+
+    // Zeige die Antwort
+    function showAnswer(item, event) {
+      const answerBox = document.getElementById('answerBox');
+      const answerContent = document.getElementById('answerContent');
+      answerContent.innerHTML = `
+        <h3>${item.question}</h3>
+        ${item.answer}
+      `;
+      answerBox.style.display = 'block';
+      document.querySelectorAll('.btn-custom').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+    }
+
+    // Schließen der Antworten
+    function closeAnswer() {
+      document.getElementById('answerBox').style.display = 'none';
+      document.querySelectorAll('.btn-custom').forEach(btn => btn.classList.remove('active'));
+    }
+
+    // Filtern
+    function filterQuestions() {
+      const filter = document.getElementById('filterDropdown').value;
+      const filteredData = qa_data.filter(item => {
+        if (filter === 'video') return item.answer.includes('<iframe');
+        if (filter === 'image') return item.answer.includes('<img');
+        return true;
+      });
+      createButtons(filteredData);
+    }
+
+    // Dark Mode
+    document.addEventListener("DOMContentLoaded", () => {
+      const modeToggle = document.getElementById("modeToggle");
+      if (localStorage.getItem("darkMode") === "true") {
+        document.body.classList.add("dark-mode");
+        modeToggle.innerHTML = "🌙";
+        modeToggle.classList.remove("sun");
+        modeToggle.classList.add("moon");
+      } else {
+        document.body.classList.remove("dark-mode");
+        modeToggle.innerHTML = "☀️";
+        modeToggle.classList.remove("moon");
+        modeToggle.classList.add("sun");
+      }
+      modeToggle.addEventListener("click", () => {
+        document.body.classList.toggle("dark-mode");
+        const isDark = document.body.classList.contains("dark-mode");
+        localStorage.setItem("darkMode", isDark);
+        modeToggle.innerHTML = isDark ? "🌙" : "☀️";
+        modeToggle.classList.toggle("sun", !isDark);
+        modeToggle.classList.toggle("moon", isDark);
+      });
+      
+      createButtons(qa_data);
+    });
+  </script>
+</body>
+</html>
